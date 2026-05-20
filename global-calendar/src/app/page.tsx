@@ -51,7 +51,7 @@ export default function HomePage() {
 
             <div className="mt-5 flex flex-col gap-3 sm:flex-row">
               <Link
-                href="/calendar"
+                href="/login"
                 className="rounded-full bg-slate-950 px-7 py-3 text-center font-semibold text-white shadow-xl shadow-slate-300 transition hover:-translate-y-0.5 hover:bg-blue-700"
               >
                 Commencer maintenant
