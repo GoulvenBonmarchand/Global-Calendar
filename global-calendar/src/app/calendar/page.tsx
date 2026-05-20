@@ -1,4 +1,5 @@
 import WelcomeBanner from "@/components/calendar/WelcomeBanner";
+import CalendarPreview from "@/app/calendar/CalendarPreview";
 
 export default async function CalendarPage({
   searchParams,
@@ -6,5 +7,11 @@ export default async function CalendarPage({
   searchParams: Promise<{ username?: string }>;
 }) {
   const { username } = await searchParams;
-  return <WelcomeBanner username={username} />;
+
+  return (
+    <main>
+      <WelcomeBanner username={username} />
+      <CalendarPreview />
+    </main>
+  );
 }
