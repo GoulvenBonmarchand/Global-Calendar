@@ -28,21 +28,6 @@ export default function LoginLayout({
           </p>
         </header>
 
-        <div>
-          <h1 className="max-w-4xl text-5xl font-black tracking-tight text-slate-950 md:text-6xl">
-            Organisez vos projets.
-            <span className="block bg-linear-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">
-              Libérez votre temps.
-            </span>
-          </h1>
-
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-            Global Calendar aide votre équipe à créer des événements,
-            visualiser les disponibilités et éviter les discussions
-            interminables du type : “qui est libre quand ?”.
-          </p>
-        </div>
-
         <div className="mt-10">{children}</div>
       </section>
     </main>
