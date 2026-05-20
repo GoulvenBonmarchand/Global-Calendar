@@ -3,7 +3,6 @@ import Link from "next/link";
 
 const links = [
   { href: "/calendar", label: "Vue d'ensemble" },
-  // Add more as you create sub-routes:
   // { href: "/calendar/week", label: "Semaine" },
   // { href: "/calendar/month", label: "Mois" },
 ];
@@ -11,7 +10,6 @@ const links = [
 export default function Sidebar() {
   return (
     <aside className="flex w-64 flex-col gap-3 rounded-2xl bg-slate-100 p-3">
-      {/* Top card — logo */}
       <div className="rounded-xl border border-slate-200 bg-white p-4">
         <Link href="/" className="flex items-center gap-3">
           <Image
@@ -27,7 +25,6 @@ export default function Sidebar() {
         </Link>
       </div>
 
-      {/* Middle card — features (grows to fill remaining height) */}
       <nav className="flex-1 rounded-xl border border-slate-200 bg-white p-3">
         <ul className="flex flex-col gap-1">
           {links.map((link) => (
@@ -43,7 +40,6 @@ export default function Sidebar() {
         </ul>
       </nav>
 
-      {/* Bottom card — logout */}
       <div className="rounded-xl border border-slate-200 bg-white p-3">
         <Link
           href="/"
