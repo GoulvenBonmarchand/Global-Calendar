@@ -1,7 +1,10 @@
 "use client";
 
+export type EventKind = "private" | "shared";
+
 export type CalendarEvent = {
   id: number;
+  kind: EventKind;
   userName: string;
   title: string;
   date?: string;
@@ -13,12 +16,12 @@ export type CalendarEvent = {
 type CardsProps = {
   event: CalendarEvent;
   onClose: () => void;
-  onDelete?: (eventId: number) => void;
+  onDelete?: (event: CalendarEvent) => void;
 };
 
 export default function Cards({ event, onClose, onDelete }: CardsProps) {
   function handleDelete() {
-    onDelete?.(event.id);
+    onDelete?.(event);
     onClose();
   }
 
@@ -36,6 +39,9 @@ export default function Cards({ event, onClose, onDelete }: CardsProps) {
         <h2 className="text-2xl font-bold text-slate-900">{event.title}</h2>
         <p className="mt-1 text-sm font-medium text-slate-600">
           {event.userName}
+          <span className="ml-2 inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">
+            {event.kind === "private" ? "Privé" : "Partagé"}
+          </span>
         </p>
 
         {event.date && (

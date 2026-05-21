@@ -1,32 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+
 import Cards from "@/components/cards/cards";
 import type { CalendarEvent } from "@/components/cards/cards";
 import CreateCardButton from "@/components/cards/CreateCards";
 import CalendarGrid from "@/components/calendar/CalendarGrid";
-import { events } from "@/data/events";
+import { deleteEventAction } from "@/app/calendar/actions";
 
 // On choisit comme semaine de départ la semaine de création du projet: Monday, May 18, 2026.
 // On vera plus tard si on peut avoir comme semaine par défaut la semaine courante.
 const DEFAULT_WEEK_START = new Date(2026, 4, 18);
 
-export default function CalendarCreateEvent() {
-  const [allEvents, setAllEvents] = useState<CalendarEvent[]>(events);
+type Participant = { id: number; name: string };
+
+type CalendarCreateEventProps = {
+  events: CalendarEvent[];
+  participants: Participant[];
+};
+
+export default function CalendarCreateEvent({
+  events,
+  participants,
+}: CalendarCreateEventProps) {
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
     null,
   );
   const [weekStart, setWeekStart] = useState<Date>(DEFAULT_WEEK_START);
+  const [, startTransition] = useTransition();
 
-  function handleCreateEvent(event: CalendarEvent) {
-    setAllEvents((currentEvents) => [...currentEvents, event]);
-    setSelectedEvent(event);
-  }
-
-  function handleDeleteEvent(eventId: number) {
-    setAllEvents((currentEvents) =>
-      currentEvents.filter((event) => event.id !== eventId),
-    );
+  function handleDeleteEvent(event: CalendarEvent) {
+    startTransition(async () => {
+      await deleteEventAction(event.id, event.kind);
+    });
     setSelectedEvent(null);
   }
 
@@ -82,11 +88,11 @@ export default function CalendarCreateEvent() {
           </button>
         </div>
 
-        <CreateCardButton onCreate={handleCreateEvent} />
+        <CreateCardButton participants={participants} />
       </div>
 
       <CalendarGrid
-        events={allEvents}
+        events={events}
         onSelectEvent={setSelectedEvent}
         weekStart={weekStart}
       />
