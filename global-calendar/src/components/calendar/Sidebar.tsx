@@ -1,8 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import SidebarAddEventButton from "@/components/calendar/SidebarAddEventButton";
-
 const links = [
   { href: "/calendar", label: "Vue d'ensemble" },
   // { href: "/calendar/week", label: "Semaine" },
@@ -25,10 +23,6 @@ export default function Sidebar() {
             Global Calendar
           </span>
         </Link>
-      </div>
-
-      <div className="rounded-xl border border-slate-200 bg-white p-3">
-        <SidebarAddEventButton />
       </div>
 
       <nav className="flex-1 rounded-xl border border-slate-200 bg-white p-3">
