@@ -28,6 +28,7 @@ Le plus difficile a certainement été le travail de groupe, que ce soit pour la
 Pour apprendre à utiliser Next.js et trouver des idées pour le site, nous avons utilisé le tutoriel disponible sur le site officiel de Next.js :
 
 https://nextjs.org/learn
+
 https://nextjs.org/learn/react-foundations
 
 Utilisation de l’IA
