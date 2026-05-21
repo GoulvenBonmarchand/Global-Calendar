@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import MiniCalendar from "@/components/calendar/MiniCalendar";
+
 const links = [
   { href: "/calendar", label: "Vue d'ensemble" },
   // { href: "/calendar/week", label: "Semaine" },
@@ -38,6 +40,7 @@ export default function Sidebar() {
             </li>
           ))}
         </ul>
+        <MiniCalendar />
       </nav>
 
       <div className="rounded-xl border border-slate-200 bg-white p-3">
