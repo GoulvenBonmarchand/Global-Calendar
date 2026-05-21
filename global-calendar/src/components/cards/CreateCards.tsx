@@ -122,6 +122,7 @@ export default function CreateCardButton({ onCreate }: CreateCardButtonProps) {
                 Date
                 <input
                   type="date"
+                  required
                   value={form.date}
                   onChange={(event) => updateField("date", event.target.value)}
                   className="rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
