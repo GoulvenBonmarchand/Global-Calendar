@@ -2,6 +2,7 @@
 
 export type CalendarEvent = {
   id: number;
+  userName: string;
   title: string;
   date?: string;
   startTime?: string;
@@ -27,6 +28,9 @@ export default function Cards({ event, onClose }: CardsProps) {
         </button>
 
         <h2 className="text-2xl font-bold text-slate-900">{event.title}</h2>
+        <p className="mt-1 text-sm font-medium text-slate-600">
+          {event.userName}
+        </p>
 
         {event.date && (
           <p className="mt-2 text-sm text-slate-500">{event.date}</p>
