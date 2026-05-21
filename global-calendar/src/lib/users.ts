@@ -11,16 +11,10 @@ export type UserRow = {
 
 export function findUserByName(name: string): UserRow | null {
   const row = db
-    .prepare("SELECT id, name, password_hash FROM users WHERE name = ?")
+    .prepare(
+      "SELECT id, name, password_hash FROM users WHERE LOWER(name) = LOWER(?)",
+    )
     .get(name) as UserRow | undefined;
-
-  return row ?? null;
-}
-
-export function findUserById(id: number): UserRow | null {
-  const row = db
-    .prepare("SELECT id, name, password_hash FROM users WHERE id = ?")
-    .get(id) as UserRow | undefined;
 
   return row ?? null;
 }

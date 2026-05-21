@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 import { mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
-import { events as seedEvents } from "@/data/events";
+import { seedEvents, seedUsers } from "@/data/events";
 
 const DB_PATH = resolve(process.cwd(), "data", "app.db");
 
@@ -83,36 +83,68 @@ function seedIfEmpty(instance: Database.Database) {
     return;
   }
 
-  const hash = bcrypt.hashSync("changeme", 10);
-
   const insertUser = instance.prepare(
     "INSERT INTO users (name, password_hash) VALUES (?, ?)",
   );
-  const insertEvent = instance.prepare(
+  const insertPrivate = instance.prepare(
     `INSERT INTO private_events
        (titre, date, start_time, end_time, description, user_id)
      VALUES (?, ?, ?, ?, ?, ?)`,
   );
+  const insertShared = instance.prepare(
+    `INSERT INTO shared_events
+       (titre, date, start_time, end_time, description, createur_id, visibility)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+  );
+  const insertParticipant = instance.prepare(
+    `INSERT INTO shared_event_participants (event_id, user_id) VALUES (?, ?)`,
+  );
 
   const userIdByName = new Map<string, number>();
 
-  for (const event of seedEvents) {
-    const username = event.userName.toLowerCase();
-    let userId = userIdByName.get(username);
+  for (const user of seedUsers) {
+    const hash = bcrypt.hashSync(user.password, 10);
+    const result = insertUser.run(user.name, hash);
+    userIdByName.set(user.name, Number(result.lastInsertRowid));
+  }
 
-    if (!userId) {
-      const result = insertUser.run(username, hash);
-      userId = Number(result.lastInsertRowid);
-      userIdByName.set(username, userId);
+  const resolveUserId = (name: string): number => {
+    const id = userIdByName.get(name);
+    if (!id) {
+      throw new Error(`Seed data references unknown user "${name}".`);
+    }
+    return id;
+  };
+
+  for (const event of seedEvents) {
+    if (event.kind === "private") {
+      insertPrivate.run(
+        event.title,
+        event.date,
+        event.startTime || null,
+        event.endTime || null,
+        event.description || null,
+        resolveUserId(event.owner),
+      );
+      continue;
     }
 
-    insertEvent.run(
+    const visibility = event.kind === "shared-public" ? "public" : "private";
+    const sharedResult = insertShared.run(
       event.title,
       event.date,
       event.startTime || null,
       event.endTime || null,
       event.description || null,
-      userId,
+      resolveUserId(event.creator),
+      visibility,
     );
+    const sharedEventId = Number(sharedResult.lastInsertRowid);
+
+    if (event.kind === "shared-restricted") {
+      for (const participantName of event.participants) {
+        insertParticipant.run(sharedEventId, resolveUserId(participantName));
+      }
+    }
   }
 }

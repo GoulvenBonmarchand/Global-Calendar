@@ -1,6 +1,6 @@
 "use client";
 
-export type EventKind = "private" | "shared";
+import type { EventKind } from "@/lib/events-repo";
 
 export type CalendarEvent = {
   id: number;
