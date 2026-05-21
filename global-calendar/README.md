@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Bonjour, bienvenue sur la première version de notre projet **Global Calendar**.
 
-## Getting Started
-
-First, run the development server:
+N’oubliez pas de lancer les commandes suivantes, ou leurs équivalents avec pnpm :
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
+bun i
+```
+
+pour installer les packages.
+
+```bash
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+pour lancer le serveur de développement.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Vous pouvez ensuite créer un compte, ou explorer les événements déjà créés avec l’un de nos trois comptes. Les mots de passe sont tous `000000` et les noms d’utilisateur sont : **Amaury**, **Loris** et **Goulven**.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Ce calendrier n’est malheureusement pas encore complet, mais les fonctionnalités principales sont présentes.
 
-## Learn More
+Profitez bien de notre application !
 
-To learn more about Next.js, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Différents problèmes que nous avons rencontrés
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Le plus difficile a certainement été le travail de groupe, que ce soit pour la répartition des tâches ou simplement pour la gestion des merge conflicts, qui ont parfois causé beaucoup de problèmes.
 
-## Deploy on Vercel
+Pour apprendre à utiliser Next.js et trouver des idées pour le site, nous avons utilisé le tutoriel disponible sur le site officiel de Next.js :
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+https://nextjs.org/learn
+https://nextjs.org/learn/react-foundations
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Utilisation de l’IA
+
+Notre utilisation principale de l’IA a été pour le style. La grande majorité du Tailwind CSS a été implémentée avec l’aide de l’IA, afin d’obtenir un rendu agréable en un temps réduit.
+
+L’IA a aussi été très utile pour le débogage, ainsi que pour l’implémentation des fonctionnalités les plus compliquées.
