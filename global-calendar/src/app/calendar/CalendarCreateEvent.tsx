@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
-
+import { useMemo, useState, useTransition } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Cards from "@/components/cards/cards";
 import type { CalendarEvent } from "@/components/cards/cards";
 import CreateCardButton from "@/components/cards/CreateCards";
@@ -28,6 +28,24 @@ export default function CalendarCreateEvent({
   );
   const [weekStart, setWeekStart] = useState<Date>(DEFAULT_WEEK_START);
   const [, startTransition] = useTransition();
+type CalendarCreateEventProps = {
+  initialWeekStart?: string;
+};
+
+export default function CalendarCreateEvent({
+  initialWeekStart,
+}: CalendarCreateEventProps) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const resolvedWeekStart = useMemo(
+    () => parseWeekStart(initialWeekStart) ?? DEFAULT_WEEK_START,
+    [initialWeekStart],
+  );
+  const [allEvents, setAllEvents] = useState<CalendarEvent[]>(events);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
+    null,
+  );
 
   function handleDeleteEvent(event: CalendarEvent) {
     startTransition(async () => {
@@ -37,11 +55,12 @@ export default function CalendarCreateEvent({
   }
 
   function shiftWeek(days: number) {
-    setWeekStart((current) => {
-      const next = new Date(current);
-      next.setDate(next.getDate() + days);
-      return next;
-    });
+    const next = new Date(resolvedWeekStart);
+    next.setDate(next.getDate() + days);
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("weekStart", formatDateParam(next));
+    router.push(`${pathname}?${params.toString()}`);
   }
 
   return (
@@ -94,7 +113,7 @@ export default function CalendarCreateEvent({
       <CalendarGrid
         events={events}
         onSelectEvent={setSelectedEvent}
-        weekStart={weekStart}
+        weekStart={resolvedWeekStart}
       />
 
       {selectedEvent && (
@@ -106,4 +125,22 @@ export default function CalendarCreateEvent({
       )}
     </>
   );
+}
+
+function parseWeekStart(weekStart?: string) {
+  const match = weekStart?.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+
+  if (!match) {
+    return null;
+  }
+
+  return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+}
+
+function formatDateParam(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 }

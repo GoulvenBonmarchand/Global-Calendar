@@ -17,10 +17,17 @@ export default async function CalendarPage() {
   const events = listEventsForUser(userId);
   const participants = listOtherUsers(userId);
 
+export default async function CalendarPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ username?: string; weekStart?: string }>;
+}) {
+  const { username, weekStart } = await searchParams;
+
   return (
     <>
-      <WelcomeBanner username={session?.user?.name ?? undefined} />
-      <CalendarCreateEvent events={events} participants={participants} />
+      <WelcomeBanner username={username} />
+      <CalendarCreateEvent initialWeekStart={weekStart} />
     </>
   );
 }

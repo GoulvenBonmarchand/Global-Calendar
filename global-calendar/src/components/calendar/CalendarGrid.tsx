@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import type { CalendarEvent } from "@/components/cards/cards";
 
 const DAYS = [
@@ -31,6 +32,16 @@ export default function CalendarGrid({
   onSelectEvent,
   weekStart,
 }: CalendarGridProps) {
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setNow(new Date());
+    }, 60_000);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
   return (
     <div className="grid grid-cols-8 gap-2 rounded-2xl border border-slate-200 bg-slate-100 p-3">
       <TimeColumn />
@@ -45,6 +56,7 @@ export default function CalendarGrid({
             year={date.getFullYear()}
             events={events}
             onSelectEvent={onSelectEvent}
+            now={now}
           />
         );
       })}
@@ -86,6 +98,7 @@ type DayColumnProps = {
   year: number;
   events: CalendarEvent[];
   onSelectEvent: (event: CalendarEvent) => void;
+  now: Date;
 };
 
 function DayColumn({
@@ -95,10 +108,12 @@ function DayColumn({
   year,
   events,
   onSelectEvent,
+  now,
 }: DayColumnProps) {
   const dayEvents = events.filter((event) =>
     isEventOnDay(event, day, month, year),
   );
+  const showNowIndicator = isSameDay(now, day, month, year);
 
   return (
     <div className="flex h-full flex-col gap-2 rounded-xl border border-slate-200 bg-white p-2">
@@ -120,6 +135,8 @@ function DayColumn({
           />
         ))}
 
+        {showNowIndicator && <NowIndicator now={now} />}
+
         {dayEvents.map((event) => (
           <EventChip
             key={event.id}
@@ -128,6 +145,25 @@ function DayColumn({
           />
         ))}
       </div>
+    </div>
+  );
+}
+
+function NowIndicator({ now }: { now: Date }) {
+  const position = getNowPosition(now);
+
+  if (position === null) {
+    return null;
+  }
+
+  return (
+    <div
+      className="pointer-events-none absolute left-0 right-0 z-20 flex items-center"
+      style={{ top: position }}
+      aria-hidden="true"
+    >
+      <span className="h-2 w-2 rounded-full bg-red-500" />
+      <span className="h-0.5 flex-1 rounded-full bg-red-500" />
     </div>
   );
 }
@@ -173,6 +209,26 @@ function getEventPosition(event: CalendarEvent) {
     top: ((clampedStart - calendarStart) / 60) * HOUR_HEIGHT,
     height: ((clampedEnd - clampedStart) / 60) * HOUR_HEIGHT,
   };
+}
+
+function getNowPosition(now: Date) {
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  const calendarStart = START_HOUR * 60;
+  const calendarEnd = END_HOUR * 60;
+
+  if (nowMinutes < calendarStart || nowMinutes > calendarEnd) {
+    return null;
+  }
+
+  return ((nowMinutes - calendarStart) / 60) * HOUR_HEIGHT;
+}
+
+function isSameDay(date: Date, day: number, month: number, year: number) {
+  return (
+    date.getDate() === day &&
+    date.getMonth() + 1 === month &&
+    date.getFullYear() === year
+  );
 }
 
 function parseTimeToMinutes(time?: string) {
