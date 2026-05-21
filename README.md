@@ -1,5 +1,12 @@
 Bonjour, bienvenue sur la première version de notre projet **Global Calendar**.
 
+Avant toute chose merci de faire :
+
+```bash
+cd global-calendar
+```
+Nextjs refuse les majuscules dans les noms de fichiers, d'où ce petit tour de passe passe dans le repo. 
+
 N’oubliez pas de lancer les commandes suivantes, ou leurs équivalents avec pnpm :
 
 ```bash
