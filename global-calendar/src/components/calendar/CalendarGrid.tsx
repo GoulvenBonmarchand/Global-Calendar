@@ -20,34 +20,42 @@ const HOURS = Array.from(
   (_, i) => START_HOUR + i,
 );
 
-// Anchor for the displayed week. Monday = May 18, 2026.
-const FIRST_DAY = { day: 18, month: 5, year: 2026 };
-
 type CalendarGridProps = {
   events: CalendarEvent[];
   onSelectEvent: (event: CalendarEvent) => void;
+  weekStart: Date;
 };
 
 export default function CalendarGrid({
   events,
   onSelectEvent,
+  weekStart,
 }: CalendarGridProps) {
   return (
     <div className="grid grid-cols-8 gap-2 rounded-2xl border border-slate-200 bg-slate-100 p-3">
       <TimeColumn />
-      {DAYS.map((label, index) => (
-        <DayColumn
-          key={label}
-          label={label}
-          day={FIRST_DAY.day + index}
-          month={FIRST_DAY.month}
-          year={FIRST_DAY.year}
-          events={events}
-          onSelectEvent={onSelectEvent}
-        />
-      ))}
+      {DAYS.map((label, index) => {
+        const date = addDays(weekStart, index);
+        return (
+          <DayColumn
+            key={label}
+            label={label}
+            day={date.getDate()}
+            month={date.getMonth() + 1}
+            year={date.getFullYear()}
+            events={events}
+            onSelectEvent={onSelectEvent}
+          />
+        );
+      })}
     </div>
   );
+}
+
+function addDays(date: Date, days: number) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  return next;
 }
 
 function TimeColumn() {
