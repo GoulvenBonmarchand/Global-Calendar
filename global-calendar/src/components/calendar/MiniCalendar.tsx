@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 const MONTHS = [
   "Janvier",
@@ -20,13 +21,17 @@ const MONTHS = [
 const WEEKDAYS = ["L", "M", "M", "J", "V", "S", "D"] as const;
 
 export default function MiniCalendar() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const today = new Date();
   const [view, setView] = useState({
     year: today.getFullYear(),
     month: today.getMonth(),
   });
 
-  const days = buildMonthDays(view.year, view.month);
+  const weeks = buildMonthWeeks(view.year, view.month);
+  const selectedWeekStart = searchParams.get("weekStart");
 
   const goToPreviousMonth = () => {
     setView(({ year, month }) =>
@@ -42,6 +47,12 @@ export default function MiniCalendar() {
         ? { year: year + 1, month: 0 }
         : { year, month: month + 1 },
     );
+  };
+
+  const selectWeek = (weekStart: Date) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("weekStart", formatDateParam(weekStart));
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   return (
@@ -74,27 +85,46 @@ export default function MiniCalendar() {
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-0.5 px-1">
-        {days.map(({ date, inMonth }) => {
-          const isToday =
-            date.getFullYear() === today.getFullYear() &&
-            date.getMonth() === today.getMonth() &&
-            date.getDate() === today.getDate();
+      <div className="grid gap-0.5 px-1">
+        {weeks.map((week) => {
+          const weekStart = week[0].date;
+          const isSelected =
+            selectedWeekStart === formatDateParam(weekStart);
 
           return (
-            <span
-              key={date.toISOString()}
+            <button
+              key={weekStart.toISOString()}
+              type="button"
+              onClick={() => selectWeek(weekStart)}
               className={[
-                "flex h-6 items-center justify-center rounded-md text-[11px] font-medium",
-                isToday
-                  ? "bg-blue-600 text-white"
-                  : inMonth
-                    ? "text-slate-700"
-                    : "text-slate-300",
+                "grid grid-cols-7 gap-0.5 rounded-lg p-0.5 transition",
+                isSelected ? "bg-blue-100" : "hover:bg-blue-50",
               ].join(" ")}
+              aria-label={`Afficher la semaine du ${weekStart.toLocaleDateString("fr-FR")}`}
             >
-              {date.getDate()}
-            </span>
+              {week.map(({ date, inMonth }) => {
+                const isToday =
+                  date.getFullYear() === today.getFullYear() &&
+                  date.getMonth() === today.getMonth() &&
+                  date.getDate() === today.getDate();
+
+                return (
+                  <span
+                    key={date.toISOString()}
+                    className={[
+                      "flex h-6 items-center justify-center rounded-md text-[11px] font-medium",
+                      isToday
+                        ? "bg-blue-600 text-white"
+                        : inMonth
+                          ? "text-slate-700"
+                          : "text-slate-300",
+                    ].join(" ")}
+                  >
+                    {date.getDate()}
+                  </span>
+                );
+              })}
+            </button>
           );
         })}
       </div>
@@ -102,12 +132,12 @@ export default function MiniCalendar() {
   );
 }
 
-function buildMonthDays(year: number, month: number) {
+function buildMonthWeeks(year: number, month: number) {
   const firstOfMonth = new Date(year, month, 1);
   const offsetToMonday = (firstOfMonth.getDay() + 6) % 7;
   const gridStart = new Date(year, month, 1 - offsetToMonday);
 
-  return Array.from({ length: 42 }, (_, index) => {
+  const days = Array.from({ length: 42 }, (_, index) => {
     const date = new Date(
       gridStart.getFullYear(),
       gridStart.getMonth(),
@@ -115,4 +145,16 @@ function buildMonthDays(year: number, month: number) {
     );
     return { date, inMonth: date.getMonth() === month };
   });
+
+  return Array.from({ length: 6 }, (_, weekIndex) =>
+    days.slice(weekIndex * 7, weekIndex * 7 + 7),
+  );
+}
+
+function formatDateParam(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 }
