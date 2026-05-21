@@ -1,6 +1,19 @@
-import { CalendarEvent } from "@/components/cards/cards";
+// Données de démonstration utilisées uniquement pour amorcer SQLite
+// (cf. `src/lib/db.ts`). Chaque `userName` distinct devient un compte
+// (mot de passe par défaut : "changeme") et chaque entrée devient un
+// évènement privé pour cet utilisateur.
 
-export const events: CalendarEvent[] = [
+export type SeedEvent = {
+  id: number;
+  userName: string;
+  title: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  description: string;
+};
+
+export const events: SeedEvent[] = [
   {
     id: 1,
     userName: "Goulven",

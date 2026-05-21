@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+
 import Cards from "@/components/cards/cards";
 import type { CalendarEvent } from "@/components/cards/cards";
 import CreateCardButton from "@/components/cards/CreateCards";
@@ -17,22 +18,12 @@ type Participant = { id: number; name: string };
 type CalendarCreateEventProps = {
   events: CalendarEvent[];
   participants: Participant[];
+  initialWeekStart?: string;
 };
 
 export default function CalendarCreateEvent({
   events,
   participants,
-}: CalendarCreateEventProps) {
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
-    null,
-  );
-  const [weekStart, setWeekStart] = useState<Date>(DEFAULT_WEEK_START);
-  const [, startTransition] = useTransition();
-type CalendarCreateEventProps = {
-  initialWeekStart?: string;
-};
-
-export default function CalendarCreateEvent({
   initialWeekStart,
 }: CalendarCreateEventProps) {
   const pathname = usePathname();
@@ -42,10 +33,10 @@ export default function CalendarCreateEvent({
     () => parseWeekStart(initialWeekStart) ?? DEFAULT_WEEK_START,
     [initialWeekStart],
   );
-  const [allEvents, setAllEvents] = useState<CalendarEvent[]>(events);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
     null,
   );
+  const [, startTransition] = useTransition();
 
   function handleDeleteEvent(event: CalendarEvent) {
     startTransition(async () => {

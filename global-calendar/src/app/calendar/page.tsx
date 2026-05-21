@@ -6,7 +6,11 @@ import { auth } from "@/lib/auth";
 import { listEventsForUser } from "@/lib/events-repo";
 import { listOtherUsers } from "@/lib/users";
 
-export default async function CalendarPage() {
+export default async function CalendarPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ weekStart?: string }>;
+}) {
   const session = await auth();
   const userId = session?.user?.id ? Number(session.user.id) : null;
 
@@ -14,20 +18,18 @@ export default async function CalendarPage() {
     redirect("/login");
   }
 
+  const { weekStart } = await searchParams;
   const events = listEventsForUser(userId);
   const participants = listOtherUsers(userId);
 
-export default async function CalendarPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ username?: string; weekStart?: string }>;
-}) {
-  const { username, weekStart } = await searchParams;
-
   return (
     <>
-      <WelcomeBanner username={username} />
-      <CalendarCreateEvent initialWeekStart={weekStart} />
+      <WelcomeBanner username={session?.user?.name ?? undefined} />
+      <CalendarCreateEvent
+        events={events}
+        participants={participants}
+        initialWeekStart={weekStart}
+      />
     </>
   );
 }

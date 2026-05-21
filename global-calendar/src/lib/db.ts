@@ -5,6 +5,8 @@ import bcrypt from "bcryptjs";
 import { mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
+import { events as seedEvents } from "@/data/events";
+
 const DB_PATH = resolve(process.cwd(), "data", "app.db");
 
 const SCHEMA = `
@@ -82,31 +84,35 @@ function seedIfEmpty(instance: Database.Database) {
   }
 
   const hash = bcrypt.hashSync("changeme", 10);
-  const seedUser = instance
-    .prepare("INSERT INTO users (name, password_hash) VALUES (?, ?)")
-    .run("goulven", hash);
-  const userId = Number(seedUser.lastInsertRowid);
 
+  const insertUser = instance.prepare(
+    "INSERT INTO users (name, password_hash) VALUES (?, ?)",
+  );
   const insertEvent = instance.prepare(
     `INSERT INTO private_events
        (titre, date, start_time, end_time, description, user_id)
      VALUES (?, ?, ?, ?, ?, ?)`,
   );
 
-  insertEvent.run(
-    "Réunion projet calendrier",
-    "2026-05-20",
-    "10:00",
-    "11:00",
-    "Point d'avancement avec l'équipe sur le calendrier.",
-    userId,
-  );
-  insertEvent.run(
-    "Cours de mathématiques",
-    "2026-05-21",
-    "14:00",
-    "16:00",
-    "Révision des séries de Fourier.",
-    userId,
-  );
+  const userIdByName = new Map<string, number>();
+
+  for (const event of seedEvents) {
+    const username = event.userName.toLowerCase();
+    let userId = userIdByName.get(username);
+
+    if (!userId) {
+      const result = insertUser.run(username, hash);
+      userId = Number(result.lastInsertRowid);
+      userIdByName.set(username, userId);
+    }
+
+    insertEvent.run(
+      event.title,
+      event.date,
+      event.startTime || null,
+      event.endTime || null,
+      event.description || null,
+      userId,
+    );
+  }
 }
