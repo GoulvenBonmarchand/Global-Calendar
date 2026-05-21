@@ -2,6 +2,7 @@
 
 export type CalendarEvent = {
   id: number;
+  userName: string;
   title: string;
   date?: string;
   startTime?: string;
@@ -12,9 +13,15 @@ export type CalendarEvent = {
 type CardsProps = {
   event: CalendarEvent;
   onClose: () => void;
+  onDelete?: (eventId: number) => void;
 };
 
-export default function Cards({ event, onClose }: CardsProps) {
+export default function Cards({ event, onClose, onDelete }: CardsProps) {
+  function handleDelete() {
+    onDelete?.(event.id);
+    onClose();
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
       <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
@@ -27,6 +34,9 @@ export default function Cards({ event, onClose }: CardsProps) {
         </button>
 
         <h2 className="text-2xl font-bold text-slate-900">{event.title}</h2>
+        <p className="mt-1 text-sm font-medium text-slate-600">
+          {event.userName}
+        </p>
 
         {event.date && (
           <p className="mt-2 text-sm text-slate-500">{event.date}</p>
@@ -40,6 +50,18 @@ export default function Cards({ event, onClose }: CardsProps) {
 
         {event.description && (
           <p className="mt-4 text-slate-700">{event.description}</p>
+        )}
+
+        {onDelete && (
+          <div className="mt-6 flex justify-end">
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 hover:border-red-300 hover:bg-red-100"
+            >
+              Supprimer
+            </button>
+          </div>
         )}
       </div>
     </div>

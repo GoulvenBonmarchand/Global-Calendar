@@ -27,6 +27,9 @@ export default function CalendarPreview() {
             className="rounded-xl border border-slate-200 bg-white p-4 text-left shadow hover:bg-slate-50"
           >
             <h3 className="font-semibold text-slate-900">{event.title}</h3>
+            <p className="text-sm font-medium text-slate-600">
+              {event.userName}
+            </p>
             <p className="text-sm text-slate-500">{event.date}</p>
           </button>
         ))}

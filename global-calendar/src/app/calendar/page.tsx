@@ -1,4 +1,4 @@
-import CalendarGrid from "@/components/calendar/CalendarGrid";
+import CalendarCreateEvent from "@/app/calendar/CalendarCreateEvent";
 import WelcomeBanner from "@/components/calendar/WelcomeBanner";
 
 export default async function CalendarPage({
@@ -10,7 +10,7 @@ export default async function CalendarPage({
   return (
     <>
       <WelcomeBanner username={username} />
-      <CalendarGrid />
+      <CalendarCreateEvent />
     </>
   );
 }
