@@ -1,6 +1,9 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import type { CalendarEvent } from "@/components/cards/cards";
+
+
 
 const DAYS = [
   "Lundi",
@@ -27,13 +30,21 @@ type CalendarGridProps = {
 };
 
 export default function CalendarGrid({
-  events,
-  onSelectEvent,
-  weekStart,
+    events,
+    onSelectEvent,
+    weekStart,
 }: CalendarGridProps) {
-  return (
+    const [couleurPreferee, setCouleurPreferee] = useState("#72a1ec");
+
+useEffect(() => {
+    const couleurSauvegardee = localStorage.getItem("user_pref_color");
+    if (couleurSauvegardee) {
+      setCouleurPreferee(couleurSauvegardee);
+    }
+    }, []);
+    return (
     <div className="grid grid-cols-8 gap-2 rounded-2xl border border-slate-200 bg-slate-100 p-3">
-      <TimeColumn />
+      <TimeColumn couleur={couleurPreferee} />
       {DAYS.map((label, index) => {
         const date = addDays(weekStart, index);
         return (
@@ -45,6 +56,7 @@ export default function CalendarGrid({
             year={date.getFullYear()}
             events={events}
             onSelectEvent={onSelectEvent}
+            couleur={couleurPreferee}
           />
         );
       })}
@@ -58,10 +70,14 @@ function addDays(date: Date, days: number) {
   return next;
 }
 
-function TimeColumn() {
+function TimeColumn({ couleur }: { couleur: string }) {
   return (
     <div className="flex h-full flex-col gap-2 rounded-xl border border-slate-200 bg-white p-2">
-      <div className="flex h-20 w-full shrink-0 items-center justify-center rounded-lg bg-blue-600 font-bold text-white">
+      {/* 🛠️ On injecte la couleur dynamique sur le fond ici */}
+      <div 
+        style={{ backgroundColor: couleur }}
+        className="flex h-20 w-full shrink-0 items-center justify-center rounded-lg font-bold text-white"
+      >
         Heure
       </div>
       <div className="flex w-full flex-col p-1">
@@ -86,6 +102,7 @@ type DayColumnProps = {
   year: number;
   events: CalendarEvent[];
   onSelectEvent: (event: CalendarEvent) => void;
+  couleur: string;
 };
 
 function DayColumn({
@@ -95,6 +112,7 @@ function DayColumn({
   year,
   events,
   onSelectEvent,
+  couleur,
 }: DayColumnProps) {
   const dayEvents = events.filter((event) =>
     isEventOnDay(event, day, month, year),
@@ -102,7 +120,10 @@ function DayColumn({
 
   return (
     <div className="flex h-full flex-col gap-2 rounded-xl border border-slate-200 bg-white p-2">
-      <div className="flex h-20 w-full flex-col items-center justify-center rounded-lg bg-blue-600 font-bold text-white">
+      <div 
+        style={{ backgroundColor: couleur }}
+        className="flex h-20 w-full flex-col items-center justify-center rounded-lg font-bold text-white"
+      >
         <span>{label}</span>
         <span className="mt-1 whitespace-nowrap text-xs font-medium opacity-90">
           {day} / {month} / {year}
@@ -122,6 +143,7 @@ function DayColumn({
 
         {dayEvents.map((event) => (
           <EventChip
+            couleur={couleur}
             key={event.id}
             event={event}
             onSelectEvent={onSelectEvent}
@@ -135,24 +157,27 @@ function DayColumn({
 type EventChipProps = {
   event: CalendarEvent;
   onSelectEvent: (event: CalendarEvent) => void;
+  couleur: string;
 };
 
-function EventChip({ event, onSelectEvent }: EventChipProps) {
+function EventChip({ event, onSelectEvent, couleur }: EventChipProps) {
   const position = getEventPosition(event);
 
   return (
     <button
       type="button"
       onClick={() => onSelectEvent(event)}
-      className="absolute left-1 right-1 flex min-h-8 flex-col items-start justify-center overflow-hidden rounded-md border border-blue-200 bg-blue-50 px-2 text-left text-sm font-semibold text-blue-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-100"
+      className="absolute left-1 right-1 flex min-h-8 flex-col items-start justify-center overflow-hidden rounded-md border bg-white px-2 text-left text-sm font-semibold shadow-sm transition opacity-90 hover:opacity-100"
       style={{
         top: position.top,
         height: position.height,
+        borderColor: couleur,
+        color: couleur,
       }}
     >
       <span className="w-full truncate">{event.title}</span>
       {(event.startTime || event.endTime) && (
-        <span className="w-full truncate text-xs font-medium text-blue-600">
+        <span style={{ color: couleur }} className="w-full truncate text-xs font-medium opacity-80">
           {event.startTime} {event.endTime && `- ${event.endTime}`}
         </span>
       )}
