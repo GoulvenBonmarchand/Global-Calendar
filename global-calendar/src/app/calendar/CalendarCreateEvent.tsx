@@ -18,6 +18,13 @@ export default function CalendarCreateEvent() {
     setSelectedEvent(event);
   }
 
+  function handleDeleteEvent(eventId: number) {
+    setAllEvents((currentEvents) =>
+      currentEvents.filter((event) => event.id !== eventId),
+    );
+    setSelectedEvent(null);
+  }
+
   return (
     <>
       <div className="mb-4 flex justify-end">
@@ -27,7 +34,11 @@ export default function CalendarCreateEvent() {
       <CalendarGrid events={allEvents} onSelectEvent={setSelectedEvent} />
 
       {selectedEvent && (
-        <Cards event={selectedEvent} onClose={() => setSelectedEvent(null)} />
+        <Cards
+          event={selectedEvent}
+          onClose={() => setSelectedEvent(null)}
+          onDelete={handleDeleteEvent}
+        />
       )}
     </>
   );

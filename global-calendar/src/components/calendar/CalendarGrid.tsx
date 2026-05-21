@@ -12,7 +12,13 @@ const DAYS = [
   "Dimanche",
 ] as const;
 
-const HOURS = Array.from({ length: 24 - 6 + 1 }, (_, i) => 6 + i);
+const START_HOUR = 6;
+const END_HOUR = 24;
+const HOUR_HEIGHT = 44;
+const HOURS = Array.from(
+  { length: END_HOUR - START_HOUR },
+  (_, i) => START_HOUR + i,
+);
 
 // Anchor for the displayed week. Monday = May 18, 2026.
 const FIRST_DAY = { day: 18, month: 5, year: 2026 };
@@ -50,11 +56,12 @@ function TimeColumn() {
       <div className="flex h-20 w-full shrink-0 items-center justify-center rounded-lg bg-blue-600 font-bold text-white">
         Heure
       </div>
-      <div className="flex w-full flex-1 flex-col items-center gap-2 overflow-y-auto p-1">
+      <div className="flex w-full flex-col p-1">
         {HOURS.map((hour) => (
           <div
             key={hour}
-            className="flex h-8 w-full shrink-0 items-center justify-center rounded-md border border-slate-200 bg-slate-50 text-sm font-medium text-slate-700"
+            className="flex w-full shrink-0 items-start justify-center border-t border-slate-200 pt-1 text-sm font-medium text-slate-700 first:border-t-0"
+            style={{ height: HOUR_HEIGHT }}
           >
             {hour}:00
           </div>
@@ -93,7 +100,18 @@ function DayColumn({
           {day} / {month} / {year}
         </span>
       </div>
-      <div className="flex w-full flex-1 flex-col items-center gap-2 overflow-x-auto p-1">
+      <div
+        className="relative w-full p-1"
+        style={{ height: HOURS.length * HOUR_HEIGHT }}
+      >
+        {HOURS.map((hour) => (
+          <div
+            key={hour}
+            className="border-t border-slate-100 first:border-t-0"
+            style={{ height: HOUR_HEIGHT }}
+          />
+        ))}
+
         {dayEvents.map((event) => (
           <EventChip
             key={event.id}
@@ -112,11 +130,17 @@ type EventChipProps = {
 };
 
 function EventChip({ event, onSelectEvent }: EventChipProps) {
+  const position = getEventPosition(event);
+
   return (
     <button
       type="button"
       onClick={() => onSelectEvent(event)}
-      className="flex h-12 w-40 shrink-0 flex-col items-start justify-center rounded-md border border-blue-200 bg-blue-50 px-2 text-left text-sm font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-100"
+      className="absolute left-1 right-1 flex min-h-8 flex-col items-start justify-center overflow-hidden rounded-md border border-blue-200 bg-blue-50 px-2 text-left text-sm font-semibold text-blue-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-100"
+      style={{
+        top: position.top,
+        height: position.height,
+      }}
     >
       <span className="w-full truncate">{event.title}</span>
       {(event.startTime || event.endTime) && (
@@ -126,6 +150,35 @@ function EventChip({ event, onSelectEvent }: EventChipProps) {
       )}
     </button>
   );
+}
+
+function getEventPosition(event: CalendarEvent) {
+  const startMinutes = parseTimeToMinutes(event.startTime) ?? START_HOUR * 60;
+  const endMinutes =
+    parseTimeToMinutes(event.endTime) ?? Math.min(startMinutes + 60, END_HOUR * 60);
+  const calendarStart = START_HOUR * 60;
+  const calendarEnd = END_HOUR * 60;
+  const clampedStart = Math.max(startMinutes, calendarStart);
+  const clampedEnd = Math.min(Math.max(endMinutes, clampedStart + 30), calendarEnd);
+
+  return {
+    top: ((clampedStart - calendarStart) / 60) * HOUR_HEIGHT,
+    height: ((clampedEnd - clampedStart) / 60) * HOUR_HEIGHT,
+  };
+}
+
+function parseTimeToMinutes(time?: string) {
+  if (!time) {
+    return null;
+  }
+
+  const timeParts = time.match(/^(\d{1,2}):(\d{2})$/);
+
+  if (!timeParts) {
+    return null;
+  }
+
+  return Number(timeParts[1]) * 60 + Number(timeParts[2]);
 }
 
 function isEventOnDay(
