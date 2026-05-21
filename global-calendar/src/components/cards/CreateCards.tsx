@@ -1,61 +1,40 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import type { CalendarEvent } from "@/components/cards/cards";
+import { useState, useTransition } from "react";
+
+import { createEventAction } from "@/app/calendar/actions";
+
+type Participant = { id: number; name: string };
 
 type CreateCardButtonProps = {
-  onCreate: (event: CalendarEvent) => void;
+  participants: Participant[];
 };
 
-type EventForm = {
-  userName: string;
-  title: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  description: string;
-};
+type EventKindOption = "private" | "shared-public" | "shared-restricted";
 
-const initialForm: EventForm = {
-  userName: "",
-  title: "",
-  date: "",
-  startTime: "",
-  endTime: "",
-  description: "",
-};
-
-export default function CreateCardButton({ onCreate }: CreateCardButtonProps) {
+export default function CreateCardButton({
+  participants,
+}: CreateCardButtonProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [form, setForm] = useState<EventForm>(initialForm);
-
-  function updateField(field: keyof EventForm, value: string) {
-    setForm((currentForm) => ({
-      ...currentForm,
-      [field]: value,
-    }));
-  }
+  const [kind, setKind] = useState<EventKindOption>("private");
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
 
   function closeForm() {
     setIsFormOpen(false);
-    setForm(initialForm);
+    setKind("private");
+    setError(null);
   }
 
-  function handleCreateCard(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    const newEvent: CalendarEvent = {
-      id: Date.now(),
-      userName: form.userName.trim(),
-      title: form.title.trim(),
-      date: form.date,
-      startTime: form.startTime,
-      endTime: form.endTime,
-      description: form.description.trim(),
-    };
-
-    onCreate(newEvent);
-    closeForm();
+  function handleSubmit(formData: FormData) {
+    startTransition(async () => {
+      const result = await createEventAction({ error: null }, formData);
+      if (result.error) {
+        setError(result.error);
+      } else {
+        closeForm();
+      }
+    });
   }
 
   return (
@@ -83,13 +62,13 @@ export default function CreateCardButton({ onCreate }: CreateCardButtonProps) {
       {isFormOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
           <form
-            onSubmit={handleCreateCard}
+            action={handleSubmit}
             className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
           >
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
                 <h2 className="text-xl font-bold text-slate-900">
-                  Nouvel evenement
+                  Nouvel évènement
                 </h2>
                 <p className="text-sm text-slate-500">
                   Renseigne les informations de la carte.
@@ -108,26 +87,30 @@ export default function CreateCardButton({ onCreate }: CreateCardButtonProps) {
 
             <div className="grid gap-4">
               <label className="grid gap-1 text-sm font-medium text-slate-700">
-                Nom utilisateur
-                <input
-                  required
-                  value={form.userName}
+                Type
+                <select
+                  name="kind"
+                  value={kind}
                   onChange={(event) =>
-                    updateField("userName", event.target.value)
+                    setKind(event.target.value as EventKindOption)
                   }
                   className="rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                  placeholder="Goulven"
-                />
+                >
+                  <option value="private">Privé</option>
+                  <option value="shared-public">Partagé (public)</option>
+                  <option value="shared-restricted">
+                    Partagé (participants choisis)
+                  </option>
+                </select>
               </label>
 
               <label className="grid gap-1 text-sm font-medium text-slate-700">
                 Titre
                 <input
                   required
-                  value={form.title}
-                  onChange={(event) => updateField("title", event.target.value)}
+                  name="title"
                   className="rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                  placeholder="Reunion projet"
+                  placeholder="Réunion projet"
                 />
               </label>
 
@@ -136,21 +119,17 @@ export default function CreateCardButton({ onCreate }: CreateCardButtonProps) {
                 <input
                   type="date"
                   required
-                  value={form.date}
-                  onChange={(event) => updateField("date", event.target.value)}
+                  name="date"
                   className="rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 />
               </label>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="grid gap-1 text-sm font-medium text-slate-700">
-                  Heure debut
+                  Heure début
                   <input
                     type="time"
-                    value={form.startTime}
-                    onChange={(event) =>
-                      updateField("startTime", event.target.value)
-                    }
+                    name="startTime"
                     className="rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                   />
                 </label>
@@ -159,27 +138,51 @@ export default function CreateCardButton({ onCreate }: CreateCardButtonProps) {
                   Heure fin
                   <input
                     type="time"
-                    value={form.endTime}
-                    onChange={(event) =>
-                      updateField("endTime", event.target.value)
-                    }
+                    name="endTime"
                     className="rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                   />
                 </label>
               </div>
 
+              {kind === "shared-restricted" && (
+                <label className="grid gap-1 text-sm font-medium text-slate-700">
+                  Participants
+                  {participants.length === 0 ? (
+                    <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-normal text-slate-500">
+                      Aucun autre utilisateur enregistré pour le moment.
+                    </p>
+                  ) : (
+                    <select
+                      multiple
+                      name="participants"
+                      size={Math.min(participants.length, 5)}
+                      className="rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    >
+                      {participants.map((participant) => (
+                        <option key={participant.id} value={participant.id}>
+                          {participant.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </label>
+              )}
+
               <label className="grid gap-1 text-sm font-medium text-slate-700">
                 Description
                 <textarea
-                  value={form.description}
-                  onChange={(event) =>
-                    updateField("description", event.target.value)
-                  }
+                  name="description"
                   className="min-h-24 resize-y rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                  placeholder="Details de l'evenement"
+                  placeholder="Détails de l'évènement"
                 />
               </label>
             </div>
+
+            {error && (
+              <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                {error}
+              </p>
+            )}
 
             <div className="mt-6 flex justify-end gap-3">
               <button
@@ -191,9 +194,10 @@ export default function CreateCardButton({ onCreate }: CreateCardButtonProps) {
               </button>
               <button
                 type="submit"
-                className="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700"
+                disabled={pending}
+                className="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Creer
+                {pending ? "Création..." : "Créer"}
               </button>
             </div>
           </form>
