@@ -4,13 +4,14 @@ import WelcomeBanner from "@/components/calendar/WelcomeBanner";
 export default async function CalendarPage({
   searchParams,
 }: {
-  searchParams: Promise<{ username?: string }>;
+  searchParams: Promise<{ username?: string; weekStart?: string }>;
 }) {
-  const { username } = await searchParams;
+  const { username, weekStart } = await searchParams;
+
   return (
     <>
       <WelcomeBanner username={username} />
-      <CalendarCreateEvent />
+      <CalendarCreateEvent initialWeekStart={weekStart} />
     </>
   );
 }
