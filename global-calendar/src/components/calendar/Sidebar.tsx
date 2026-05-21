@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import SidebarAddEventButton from "@/components/calendar/SidebarAddEventButton";
+import MiniCalendar from "@/components/calendar/MiniCalendar";
 
 const links = [
   { href: "/calendar", label: "Vue d'ensemble" },
@@ -27,10 +27,6 @@ export default function Sidebar() {
         </Link>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-3">
-        <SidebarAddEventButton />
-      </div>
-
       <nav className="flex-1 rounded-xl border border-slate-200 bg-white p-3">
         <ul className="flex flex-col gap-1">
           {links.map((link) => (
@@ -44,6 +40,7 @@ export default function Sidebar() {
             </li>
           ))}
         </ul>
+        <MiniCalendar />
       </nav>
 
       <div className="rounded-xl border border-slate-200 bg-white p-3">
